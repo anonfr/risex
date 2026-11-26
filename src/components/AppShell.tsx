@@ -12,6 +12,7 @@ import {
   Layers,
   Moon,
   Search,
+  Sparkles,
   Sun,
   TrendingUp,
   Wallet,
@@ -29,7 +30,8 @@ const NAV_ITEMS = [
   { href: "/", label: "Home", icon: Compass },
   { href: "/explorer", label: "Explorer", icon: Wallet },
   { href: "/markets", label: "Markets", icon: TrendingUp },
-  { href: "/projects", label: "Ecosystem", icon: Layers },
+  { href: "/points", label: "Points", icon: Sparkles },
+  { href: "/projects", label: "Eco", icon: Layers },
   { href: "/learn", label: "Learn", icon: BookOpen },
 ];
 
@@ -391,7 +393,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           paddingBottom: "env(safe-area-inset-bottom)",
         }}
       >
-        <div className="grid grid-cols-5 h-14">
+        <div className="grid grid-cols-6 h-14">
           {NAV_ITEMS.map((item) => {
             const active =
               item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);

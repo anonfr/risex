@@ -252,10 +252,14 @@ export function HomeClient({ initialData }: { initialData: OverviewPayload }) {
         <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
           <div className="eco-card p-4 space-y-2.5">
             <div className="flex items-center justify-between">
-              <span className="inline-flex items-center gap-1.5 text-xs font-semibold" style={{ color: "var(--mint-bright)" }}>
+              <Link
+                href="/points"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold hover:underline"
+                style={{ color: "var(--mint-bright)" }}
+              >
                 <Sparkles className="h-3.5 w-3.5" />
-                Season 1: Ignite Points
-              </span>
+                Season 1: Ignite Points →
+              </Link>
               <span
                 className="font-mono-num text-[11px] px-2 py-0.5 rounded border"
                 style={{
