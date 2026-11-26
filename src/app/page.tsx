@@ -1,69 +1,128 @@
-import Image from "next/image";
+import { HomeClient, OverviewPayload } from "@/components/HomeClient";
+import { fromWei18, num } from "@/lib/format";
+import {
+  BuilderEntry,
+  CompetitionEntry,
+  LeaderboardEntry,
+  normalizeMarkets,
+  RawMarket,
+  riseFetch,
+} from "@/lib/risex";
 
-export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+export const dynamic = "force-dynamic";
+
+async function loadInitialOverview(): Promise<OverviewPayload> {
+  const [marketsRes, buildersRes, competitionsRes, leaderboardRes, pointsRes] =
+    await Promise.allSettled([
+      riseFetch<{ data: { markets: RawMarket[] } }>("/v1/markets", 15),
+      riseFetch<{ data: { builders: BuilderEntry[] } }>("/v1/builders", 60),
+      riseFetch<{ data: { competitions: CompetitionEntry[] } }>("/v1/competitions", 60),
+      riseFetch<{ data: { entries: Array<Record<string, unknown>> } }>(
+        "/v1/leaderboard/combined?timeframe=LEADERBOARD_TIME_FRAME_ALL&limit=50",
+        30
+      ),
+      riseFetch<{
+        data: {
+          epoch: {
+            epoch_id: string;
+            description: string;
+            starts_at: string;
+            ends_at: string;
+            distribution_at: string;
+          };
+          seconds_until_distribution: string;
+        };
+      }>("/v1/points/epoch/current", 30),
+    ]);
+
+  const markets = normalizeMarkets(
+    marketsRes.status === "fulfilled" ? marketsRes.value.data?.markets || [] : []
   );
+  const builders =
+    buildersRes.status === "fulfilled" ? buildersRes.value.data?.builders || [] : [];
+  const competitions =
+    competitionsRes.status === "fulfilled"
+      ? competitionsRes.value.data?.competitions || []
+      : [];
+
+  const leaderboard: LeaderboardEntry[] = (
+    leaderboardRes.status === "fulfilled"
+      ? leaderboardRes.value.data?.entries || []
+      : []
+  ).map((e, i) => {
+    const x = (e.x_account as Record<string, unknown> | undefined) || undefined;
+    return {
+      rank: num(e.rank as string) || i + 1,
+      address: String(e.address || ""),
+      accountValueUsd: fromWei18(e.account_value as string),
+      notionalPnlUsd: fromWei18(e.notional_pnl as string),
+      roiPct: num(e.roi_percent as string),
+      winRatePct: num(e.win_rate as string),
+      trades: num(e.trades as string),
+      notionalVolumeUsd: num(e.notional_volume as string),
+      referralVolumeUsd: num(e.referral_volume as string),
+      combinedVolumeUsd: num(e.combined_volume as string),
+      username: String(e.username || e.display_name || ""),
+      xHandle: x?.username ? String(x.username) : null,
+      avatarUrl:
+        (e.profile_image_url ? String(e.profile_image_url) : null) ||
+        (x?.profile_image_url ? String(x.profile_image_url) : null),
+    };
+  });
+
+  const sectorMap = new Map<
+    string,
+    { sector: string; count: number; volume24hUsd: number; openInterestUsd: number }
+  >();
+  for (const m of markets) {
+    const prev = sectorMap.get(m.sector) || {
+      sector: m.sector,
+      count: 0,
+      volume24hUsd: 0,
+      openInterestUsd: 0,
+    };
+    prev.count += 1;
+    prev.volume24hUsd += m.volume24hUsd;
+    prev.openInterestUsd += m.openInterestUsd;
+    sectorMap.set(m.sector, prev);
+  }
+
+  return {
+    fetchedAt: Date.now(),
+    summary: {
+      totalVolume24hUsd: markets.reduce((s, m) => s + m.volume24hUsd, 0),
+      totalOpenInterestUsd: markets.reduce((s, m) => s + m.openInterestUsd, 0),
+      activeMarketCount: markets.length,
+      avgFundingAprPct:
+        markets.length > 0
+          ? markets.reduce((s, m) => s + m.fundingAprPct, 0) / markets.length
+          : 0,
+      totalBuilders: builders.length,
+      activeBuilders: builders.filter((b) => b.is_active).length,
+      liveCompetitions: competitions.filter((c) => c.state === "live").length,
+      sectorBreakdown: Array.from(sectorMap.values()),
+    },
+    markets,
+    leaderboard,
+    builders,
+    competitions,
+    pointsEpoch:
+      pointsRes.status === "fulfilled" && pointsRes.value.data?.epoch
+        ? {
+            epochId: pointsRes.value.data.epoch.epoch_id,
+            description: pointsRes.value.data.epoch.description,
+            startsAt: num(pointsRes.value.data.epoch.starts_at),
+            endsAt: num(pointsRes.value.data.epoch.ends_at),
+            distributionAt: num(pointsRes.value.data.epoch.distribution_at),
+            secondsUntilDistribution: num(
+              pointsRes.value.data.seconds_until_distribution
+            ),
+          }
+        : null,
+  };
+}
+
+export default async function HomePage() {
+  const initialData = await loadInitialOverview();
+  return <HomeClient initialData={initialData} />;
 }

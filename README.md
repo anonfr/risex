@@ -1,36 +1,22 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# risex.eco · House of all RISEx
 
-## Getting Started
+Real-time ecosystem analytics, wallet explorer, live orderbook & chart workbench, funding rate matrix, registered builders directory, and protocol knowledge base for **RISEx** on **RISE Chain** (Mainnet Chain ID `4153`).
 
-First, run the development server:
+Made by [**anonfrxbt**](https://x.com/anonfrxbt).
+
+## Features
+
+- **Protocol Overview (`/`)** — Live 24h exchange volume, total USD open interest, Crypto / Equities & ETFs / Commodities asset mix, Points Season 1: Ignite epoch countdown, top traders, and live competitions.
+- **Wallet & Tx Explorer (`/explorer`)** — Inspect any `0x...` address or registered RISEx username: cross margin balance, account equity, all-time & unrealized PnL, win rate, Sharpe ratio, profit factor, equity/PnL/volume charts, daily PnL calendar heatmap, open positions, trade history, open orders, funding payments, and transaction decoder (`/v1/tx/{hash}`).
+- **Markets & Funding Matrix (`/markets`)** — Interactive OHLC candlestick/line terminal (`15m`, `1h`, `4h`, `1d`), live orderbook depth, recent fills, hourly funding history, full 60+ market matrix, and multi-timeframe trader leaderboard.
+- **Ecosystem, Builders & Contracts (`/projects`)** — Live registry of 94+ permissionless builder codes, XLP Vault (Yearn V3 ERC-4626), RIP-1 & RIP-2 specs, AutoYield, 14-day fee schedule, trading competitions, and verified RISE Mainnet contract addresses.
+- **Learn RISEx (`/learn`)** — Searchable protocol knowledge base and `risex-client` API quickstart.
+
+## Development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Powered by live public endpoints from [`api.rise.trade`](https://developer.rise.trade/reference/general-information) and official docs at [`docs.risechain.com/docs/risex`](https://docs.risechain.com/docs/risex).
