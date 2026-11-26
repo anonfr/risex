@@ -214,7 +214,40 @@ export function MarketsClient({
         </div>
 
         {tab === "markets" && (
-          <div className="overflow-x-auto">
+          <>
+            {/* Mobile Market Cards */}
+            <div className="sm:hidden space-y-2">
+              {sortedMarkets.map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() => router.replace(`/markets?id=${m.id}`)}
+                  className="w-full text-left rounded-xl border p-3 space-y-1.5 cursor-pointer"
+                  style={{
+                    borderColor: m.id === selectedMarketId ? "var(--line-mint)" : "var(--line)",
+                    background: m.id === selectedMarketId ? "var(--brand-mint-tint)" : "var(--surface-0)",
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono-num text-sm font-semibold">{m.symbol}/USDC</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: "var(--surface-2)", color: "var(--text-mute)" }}>
+                        {m.maxLeverage}x
+                      </span>
+                    </div>
+                    <span className="font-mono-num text-sm font-semibold">{fmtPrice(m.markPrice)}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] font-mono-num" style={{ color: "var(--text-dim)" }}>
+                    <span>Vol {fmtCompactUsd(m.volume24hUsd)} · OI {fmtCompactUsd(m.openInterestUsd)}</span>
+                    <span style={{ color: m.change24hPct >= 0 ? "var(--up)" : "var(--down)" }}>
+                      {fmtPct(m.change24hPct)}
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
                 <tr className="border-b" style={{ borderColor: "var(--line)", color: "var(--text-dim)" }}>
@@ -305,6 +338,7 @@ export function MarketsClient({
               </tbody>
             </table>
           </div>
+          </>
         )}
 
         {tab === "funding" && (
@@ -346,12 +380,56 @@ export function MarketsClient({
         )}
 
         {tab === "leaderboard" && (
-          <div className="overflow-x-auto">
+          <div>
             {lbLoading && (
               <div className="py-4 text-xs" style={{ color: "var(--mint)" }}>
                 Refreshing {lbTimeframe} leaderboard…
               </div>
             )}
+            {/* Mobile Leaderboard Cards */}
+            <div className="sm:hidden space-y-2">
+              {lbEntries.map((t) => (
+                <Link
+                  key={t.address}
+                  href={`/explorer?address=${t.address}`}
+                  className="flex items-center justify-between rounded-xl border p-3"
+                  style={{ borderColor: "var(--line)", background: "var(--surface-0)" }}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="font-mono-num text-xs w-5" style={{ color: "var(--text-dim)" }}>
+                      #{t.rank}
+                    </span>
+                    {t.avatarUrl ? (
+                      <Image src={t.avatarUrl} alt="" width={24} height={24} className="h-6 w-6 rounded-full object-cover shrink-0" />
+                    ) : null}
+                    <div className="min-w-0">
+                      <div className="text-xs font-semibold truncate">
+                        {t.xHandle ? `@${t.xHandle}` : t.username || shortAddr(t.address)}
+                      </div>
+                      <div className="text-[11px] font-mono-num" style={{ color: "var(--text-dim)" }}>
+                        Vol {fmtCompactUsd(t.combinedVolumeUsd)} · {t.winRatePct.toFixed(0)}% WR
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <div
+                      className="font-mono-num text-xs font-semibold"
+                      style={{ color: t.notionalPnlUsd >= 0 ? "var(--up)" : "var(--down)" }}
+                    >
+                      {fmtCompactUsd(t.notionalPnlUsd, true)}
+                    </div>
+                    <div
+                      className="font-mono-num text-[11px]"
+                      style={{ color: t.roiPct >= 0 ? "var(--up)" : "var(--down)" }}
+                    >
+                      {fmtPct(t.roiPct)}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
                 <tr className="border-b" style={{ borderColor: "var(--line)", color: "var(--text-dim)" }}>
@@ -421,6 +499,7 @@ export function MarketsClient({
                 ))}
               </tbody>
             </table>
+          </div>
           </div>
         )}
       </div>

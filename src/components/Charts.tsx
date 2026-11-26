@@ -94,9 +94,18 @@ export function AreaLineChart({
       </div>
       <svg
         viewBox={`0 0 680 ${height}`}
-        className="w-full overflow-visible"
+        className="w-full overflow-visible touch-pan-y"
         style={{ height }}
         onMouseLeave={() => setHoverIdx(null)}
+        onTouchEnd={() => setHoverIdx(null)}
+        onTouchMove={(e) => {
+          const touch = e.touches[0];
+          if (!touch) return;
+          const rect = e.currentTarget.getBoundingClientRect();
+          const relX = (touch.clientX - rect.left) / rect.width;
+          const idx = Math.max(0, Math.min(points.length - 1, Math.round(relX * (points.length - 1))));
+          setHoverIdx(idx);
+        }}
         onMouseMove={(e) => {
           const rect = e.currentTarget.getBoundingClientRect();
           const relX = (e.clientX - rect.left) / rect.width;
@@ -243,9 +252,18 @@ export function CandlestickChart({
 
       <svg
         viewBox={`0 0 ${W} ${height}`}
-        className="w-full overflow-visible"
+        className="w-full overflow-visible touch-pan-y"
         style={{ height }}
         onMouseLeave={() => setHoverIdx(null)}
+        onTouchEnd={() => setHoverIdx(null)}
+        onTouchMove={(e) => {
+          const touch = e.touches[0];
+          if (!touch) return;
+          const rect = e.currentTarget.getBoundingClientRect();
+          const relX = (touch.clientX - rect.left) / rect.width;
+          const idx = Math.max(0, Math.min(candles.length - 1, Math.floor(relX * candles.length)));
+          setHoverIdx(idx);
+        }}
         onMouseMove={(e) => {
           const rect = e.currentTarget.getBoundingClientRect();
           const relX = (e.clientX - rect.left) / rect.width;
@@ -365,9 +383,18 @@ export function BarSeriesChart({
 
       <svg
         viewBox={`0 0 ${W} ${height}`}
-        className="w-full"
+        className="w-full touch-pan-y"
         style={{ height }}
         onMouseLeave={() => setHoverIdx(null)}
+        onTouchEnd={() => setHoverIdx(null)}
+        onTouchMove={(e) => {
+          const touch = e.touches[0];
+          if (!touch) return;
+          const rect = e.currentTarget.getBoundingClientRect();
+          const relX = (touch.clientX - rect.left) / rect.width;
+          const idx = Math.max(0, Math.min(data.length - 1, Math.floor(relX * data.length)));
+          setHoverIdx(idx);
+        }}
         onMouseMove={(e) => {
           const rect = e.currentTarget.getBoundingClientRect();
           const relX = (e.clientX - rect.left) / rect.width;
@@ -458,16 +485,17 @@ export function PnlCalendarHeatmap({
           const intensity = Math.min(1, Math.max(0.18, Math.abs(d.pnl) / maxAbs));
           const bg =
             d.pnl > 0
-              ? `rgba(80, 210, 193, ${intensity.toFixed(2)})`
+              ? `rgba(3, 222, 130, ${intensity.toFixed(2)})`
               : d.pnl < 0
-                ? `rgba(255, 101, 101, ${intensity.toFixed(2)})`
+                ? `rgba(255, 101, 104, ${intensity.toFixed(2)})`
                 : "var(--surface-2)";
           return (
             <div
               key={d.timeMs + "-" + i}
+              onClick={() => setHovered(d)}
               onMouseEnter={() => setHovered(d)}
               onMouseLeave={() => setHovered(null)}
-              className="h-7 rounded-md border transition-transform hover:scale-110 cursor-pointer flex items-center justify-center text-[10px] font-mono-num"
+              className="h-8 sm:h-7 rounded-md border transition-transform hover:scale-110 cursor-pointer flex items-center justify-center text-[10px] font-mono-num"
               style={{
                 background: bg,
                 borderColor: "var(--line)",

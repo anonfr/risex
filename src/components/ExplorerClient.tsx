@@ -248,8 +248,8 @@ export function ExplorerClient({
           <input
             value={queryInput}
             onChange={(e) => setQueryInput(e.target.value)}
-            placeholder="0x wallet address, trader username, or 0x tx hash…"
-            className="w-full bg-transparent px-1.5 py-1.5 text-xs sm:text-sm font-mono-num outline-none"
+            placeholder="0x wallet address, username, or 0x tx hash…"
+            className="w-full bg-transparent px-1.5 py-1.5 text-base sm:text-sm font-mono-num outline-none"
           />
           <button
             type="submit"
@@ -561,12 +561,68 @@ export function ExplorerClient({
             </div>
 
             {tableTab === "positions" && (
-              <div className="overflow-x-auto">
+              <div>
                 {d.positions.length === 0 ? (
                   <div className="py-8 text-center text-xs" style={{ color: "var(--text-dim)" }}>
                     No open perpetual positions on this wallet.
                   </div>
                 ) : (
+                  <>
+                    {/* Mobile Positions Cards */}
+                    <div className="sm:hidden space-y-2.5">
+                      {d.positions.map((p) => (
+                        <Link
+                          key={p.marketId}
+                          href={`/markets?id=${p.marketId}`}
+                          className="block rounded-xl border p-3 space-y-2"
+                          style={{ borderColor: "var(--line)", background: "var(--surface-0)" }}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono-num text-sm font-semibold">
+                                {p.symbol}/USDC
+                              </span>
+                              <span
+                                className="px-1.5 py-0.5 rounded text-[10px] font-mono-num font-semibold"
+                                style={{
+                                  background:
+                                    p.side === "LONG"
+                                      ? "var(--brand-mint-tint)"
+                                      : "rgba(255,101,104,0.12)",
+                                  color: p.side === "LONG" ? "var(--up)" : "var(--down)",
+                                }}
+                              >
+                                {p.side} {p.leverage.toFixed(0)}x
+                              </span>
+                            </div>
+                            <span
+                              className="font-mono-num text-xs font-semibold"
+                              style={{
+                                color: p.unrealizedPnlUsd >= 0 ? "var(--up)" : "var(--down)",
+                              }}
+                            >
+                              {fmtUsd(p.unrealizedPnlUsd, true)} ({fmtPct(p.roePct)})
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2 text-[11px] font-mono-num" style={{ color: "var(--text-mute)" }}>
+                            <div>
+                              <div style={{ color: "var(--text-dim)" }}>Notional</div>
+                              <div>{fmtCompactUsd(p.notionalUsd)}</div>
+                            </div>
+                            <div>
+                              <div style={{ color: "var(--text-dim)" }}>Entry</div>
+                              <div>{fmtPrice(p.entryPrice)}</div>
+                            </div>
+                            <div className="text-right">
+                              <div style={{ color: "var(--text-dim)" }}>Mark</div>
+                              <div>{fmtPrice(p.markPrice)}</div>
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+
+                    <div className="hidden sm:block overflow-x-auto">
                   <table className="w-full text-left text-xs">
                     <thead>
                       <tr className="border-b" style={{ borderColor: "var(--line)", color: "var(--text-dim)" }}>
@@ -630,12 +686,48 @@ export function ExplorerClient({
                       ))}
                     </tbody>
                   </table>
+                    </div>
+                  </>
                 )}
               </div>
             )}
 
             {tableTab === "trades" && (
-              <div className="overflow-x-auto">
+              <div>
+                {/* Mobile Trade Cards */}
+                <div className="sm:hidden space-y-2">
+                  {d.trades.map((t) => (
+                    <div
+                      key={t.id}
+                      className="rounded-xl border p-3 space-y-1.5"
+                      style={{ borderColor: "var(--line)", background: "var(--surface-0)" }}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono-num text-xs font-semibold">{t.symbol}</span>
+                          <span
+                            className="font-mono-num text-[11px] font-semibold"
+                            style={{ color: t.side === "BUY" ? "var(--up)" : "var(--down)" }}
+                          >
+                            {t.side} · {t.liquidity}
+                          </span>
+                        </div>
+                        <span
+                          className="font-mono-num text-xs font-semibold"
+                          style={{ color: t.realizedPnl >= 0 ? "var(--up)" : "var(--down)" }}
+                        >
+                          {t.realizedPnl !== 0 ? fmtUsd(t.realizedPnl, true) : fmtPrice(t.price)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px] font-mono-num" style={{ color: "var(--text-dim)" }}>
+                        <span>{fmtQty(t.size)} @ {fmtPrice(t.price)}</span>
+                        <span>{fmtTimestamp(t.timeMs)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="hidden sm:block overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
                     <tr className="border-b" style={{ borderColor: "var(--line)", color: "var(--text-dim)" }}>
@@ -692,6 +784,7 @@ export function ExplorerClient({
                     ))}
                   </tbody>
                 </table>
+                </div>
               </div>
             )}
 

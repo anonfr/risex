@@ -97,7 +97,7 @@ export function MarketWorkbench({
           <select
             value={selectedId}
             onChange={(e) => handleMarketChange(e.target.value)}
-            className="rounded-xl border px-3 py-2 text-sm font-mono-num font-semibold outline-none cursor-pointer"
+            className="w-full sm:w-auto rounded-xl border px-3 py-2 text-sm font-mono-num font-semibold outline-none cursor-pointer"
             style={{
               background: "var(--tab-bg)",
               borderColor: "var(--line-mint)",
@@ -274,7 +274,7 @@ export function MarketWorkbench({
                         className="absolute inset-y-0 right-0"
                         style={{
                           width: `${Math.min(100, (b.quantity / maxBookQty) * 100)}%`,
-                          background: "rgba(80, 210, 193, 0.14)",
+                          background: "rgba(5, 223, 114, 0.14)",
                         }}
                       />
                       <span className="relative z-10" style={{ color: "var(--text-soft)" }}>

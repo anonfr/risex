@@ -232,12 +232,12 @@ export function HomeClient({ initialData }: { initialData: OverviewPayload }) {
             <input
               value={heroSearch}
               onChange={(e) => setHeroSearch(e.target.value)}
-              placeholder="Search 0x wallet, trader username, tx hash, or market (BTC, NVDA, XAU)…"
-              className="w-full bg-transparent px-2 py-2 text-sm outline-none placeholder:text-[var(--text-dim)]"
+              placeholder="Search 0x wallet, trader, or market…"
+              className="w-full bg-transparent px-1.5 py-2 text-base sm:text-sm outline-none placeholder:text-[var(--text-dim)]"
             />
             <button
               type="submit"
-              className="shrink-0 rounded-lg px-4 py-2 text-xs font-semibold cursor-pointer transition-opacity hover:opacity-90"
+              className="shrink-0 rounded-lg px-3.5 sm:px-4 py-2 text-xs font-semibold cursor-pointer transition-opacity hover:opacity-90"
               style={{
                 background: "var(--brand-mint-button)",
                 color: "var(--brand-mint-button-fg)",
@@ -468,7 +468,58 @@ export function HomeClient({ initialData }: { initialData: OverviewPayload }) {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Mobile Market Cards */}
+        <div className="sm:hidden space-y-2">
+          {filteredMarkets.slice(0, 12).map((m) => (
+            <Link
+              key={m.id}
+              href={`/markets?id=${m.id}`}
+              className="flex items-center justify-between rounded-xl border p-3 transition-colors active:bg-[var(--bg-hover)]"
+              style={{ borderColor: "var(--line)", background: "var(--surface-0)" }}
+            >
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono-num text-sm font-semibold">{m.symbol}/USDC</span>
+                  <span
+                    className="rounded px-1.5 py-0.5 text-[10px] font-medium"
+                    style={{
+                      background:
+                        m.sector === "Crypto"
+                          ? "var(--brand-mint-tint)"
+                          : m.sector === "Equities & ETFs"
+                            ? "var(--rise-purple-tint)"
+                            : "rgba(245, 182, 107, 0.14)",
+                      color:
+                        m.sector === "Crypto"
+                          ? "var(--mint-bright)"
+                          : m.sector === "Equities & ETFs"
+                            ? "var(--rise-purple)"
+                            : "var(--amber)",
+                    }}
+                  >
+                    {m.maxLeverage}x
+                  </span>
+                </div>
+                <div className="mt-1 flex items-center gap-2 text-[11px] font-mono-num" style={{ color: "var(--text-dim)" }}>
+                  <span>Vol {fmtCompactUsd(m.volume24hUsd)}</span>
+                  <span>·</span>
+                  <span>OI {fmtCompactUsd(m.openInterestUsd)}</span>
+                </div>
+              </div>
+              <div className="text-right shrink-0">
+                <div className="font-mono-num text-sm font-semibold">{fmtPrice(m.markPrice)}</div>
+                <div
+                  className="font-mono-num text-xs mt-0.5"
+                  style={{ color: m.change24hPct >= 0 ? "var(--up)" : "var(--down)" }}
+                >
+                  {fmtPct(m.change24hPct)}
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="border-b" style={{ borderColor: "var(--line)", color: "var(--text-dim)" }}>
@@ -572,7 +623,64 @@ export function HomeClient({ initialData }: { initialData: OverviewPayload }) {
             </Link>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* Mobile Top Traders Cards */}
+          <div className="sm:hidden space-y-2">
+            {data.leaderboard.slice(0, 8).map((t) => (
+              <Link
+                key={t.address}
+                href={`/explorer?address=${t.address}`}
+                className="flex items-center justify-between rounded-xl border p-3"
+                style={{ borderColor: "var(--line)", background: "var(--surface-0)" }}
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="font-mono-num text-xs w-5" style={{ color: "var(--text-dim)" }}>
+                    #{t.rank}
+                  </span>
+                  {t.avatarUrl ? (
+                    <Image
+                      src={t.avatarUrl}
+                      alt=""
+                      width={24}
+                      height={24}
+                      className="h-6 w-6 rounded-full object-cover border shrink-0"
+                      style={{ borderColor: "var(--line)" }}
+                    />
+                  ) : (
+                    <span
+                      className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-[10px] font-mono-num"
+                      style={{ background: "var(--surface-2)", color: "var(--mint)" }}
+                    >
+                      {t.address.slice(2, 4)}
+                    </span>
+                  )}
+                  <div className="min-w-0">
+                    <div className="text-xs font-semibold truncate">
+                      {t.xHandle ? `@${t.xHandle}` : t.username || shortAddr(t.address)}
+                    </div>
+                    <div className="text-[11px] font-mono-num" style={{ color: "var(--text-dim)" }}>
+                      Vol {fmtCompactUsd(t.combinedVolumeUsd)} · {t.winRatePct.toFixed(0)}% WR
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <div
+                    className="font-mono-num text-xs font-semibold"
+                    style={{ color: t.notionalPnlUsd >= 0 ? "var(--up)" : "var(--down)" }}
+                  >
+                    {fmtCompactUsd(t.notionalPnlUsd, true)}
+                  </div>
+                  <div
+                    className="font-mono-num text-[11px]"
+                    style={{ color: t.roiPct >= 0 ? "var(--up)" : "var(--down)" }}
+                  >
+                    {fmtPct(t.roiPct)}
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+        <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
                 <tr className="border-b" style={{ borderColor: "var(--line)", color: "var(--text-dim)" }}>
