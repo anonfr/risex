@@ -485,9 +485,9 @@ export function PnlCalendarHeatmap({
           const intensity = Math.min(1, Math.max(0.18, Math.abs(d.pnl) / maxAbs));
           const bg =
             d.pnl > 0
-              ? `rgba(3, 222, 130, ${intensity.toFixed(2)})`
+              ? `rgba(46, 232, 142, ${intensity.toFixed(2)})`
               : d.pnl < 0
-                ? `rgba(255, 101, 104, ${intensity.toFixed(2)})`
+                ? `rgba(228, 106, 123, ${intensity.toFixed(2)})`
                 : "var(--surface-2)";
           return (
             <div

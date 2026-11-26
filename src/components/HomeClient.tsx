@@ -4,24 +4,14 @@ import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  ArrowRight,
-  ArrowUpRight,
-  Award,
-  Layers,
-  Search,
-  Sparkles,
-  Trophy,
-  Wallet,
-  Zap,
-} from "lucide-react";
+import { ArrowRight, ArrowUpRight, Search } from "lucide-react";
+import { LiveDot, MarketBadge } from "./MarketBadge";
 import { MarketWorkbench } from "./MarketWorkbench";
 import {
   fmtCompactUsd,
   fmtDuration,
   fmtPct,
   fmtPrice,
-  fmtUsd,
   shortAddr,
 } from "@/lib/format";
 import {
@@ -67,7 +57,6 @@ export function HomeClient({ initialData }: { initialData: OverviewPayload }) {
     initialData.pointsEpoch?.secondsUntilDistribution || 0
   );
 
-  // Refresh overview every 25s
   useEffect(() => {
     const t = setInterval(async () => {
       try {
@@ -82,7 +71,7 @@ export function HomeClient({ initialData }: { initialData: OverviewPayload }) {
       } catch {
         // ignore
       }
-    }, 25000);
+    }, 30000);
     return () => clearInterval(t);
   }, []);
 
@@ -105,6 +94,15 @@ export function HomeClient({ initialData }: { initialData: OverviewPayload }) {
       );
     });
   }, [data.markets, sector, marketQuery]);
+
+  const topOiMarkets = useMemo(() => {
+    return [...data.markets]
+      .sort((a, b) => b.openInterestUsd - a.openInterestUsd)
+      .slice(0, 10);
+  }, [data.markets]);
+
+  const maxOi = Math.max(1, topOiMarkets[0]?.openInterestUsd || 1);
+  const marqueeItems = data.markets.slice(0, 12);
 
   const handleHeroSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,42 +129,23 @@ export function HomeClient({ initialData }: { initialData: OverviewPayload }) {
     }
   };
 
-  const tickerMarkets = data.markets.slice(0, 10);
-  const totalSectorVol = Math.max(
-    1,
-    data.summary.sectorBreakdown.reduce((s, b) => s + b.volume24hUsd, 0)
-  );
-  const liveCompetitions = data.competitions.filter((c) => c.state === "live");
-
   return (
-    <div className="space-y-8">
-      {/* Live Ticker Strip */}
+    <div className="space-y-6 reveal">
+      {/* Continuous Marquee Price Strip */}
       <div
-        className="flex items-center gap-3 overflow-x-auto rounded-xl border px-3 py-2 text-xs"
+        className="marquee-mask rounded-[7px] border py-2 px-3"
         style={{ borderColor: "var(--line)", background: "var(--surface-0)" }}
       >
-        <span
-          className="shrink-0 inline-flex items-center gap-1.5 font-mono-num font-semibold px-2 py-0.5 rounded-md"
-          style={{
-            background: "var(--brand-mint-tint)",
-            color: "var(--mint-bright)",
-          }}
-        >
-          <span
-            className="h-1.5 w-1.5 rounded-full live-dot"
-            style={{ background: "var(--mint)" }}
-          />
-          LIVE
-        </span>
-        <div className="flex items-center gap-5 overflow-x-auto no-scrollbar">
-          {tickerMarkets.map((m) => (
+        <div className="marquee-track">
+          {[...marqueeItems, ...marqueeItems].map((m, idx) => (
             <Link
-              key={m.id}
+              key={`${m.id}-${idx}`}
               href={`/markets?id=${m.id}`}
-              className="shrink-0 flex items-center gap-2 hover:opacity-80"
+              className="inline-flex items-center gap-2 text-xs hover:opacity-80"
             >
-              <span className="font-mono-num font-semibold">{m.symbol}</span>
-              <span className="font-mono-num" style={{ color: "var(--text-soft)" }}>
+              <MarketBadge symbol={m.symbol} size={18} />
+              <span className="font-semibold tracking-tight">{m.symbol}</span>
+              <span className="font-mono-num" style={{ color: "var(--text-mute)" }}>
                 {fmtPrice(m.markPrice)}
               </span>
               <span
@@ -180,485 +159,342 @@ export function HomeClient({ initialData }: { initialData: OverviewPayload }) {
         </div>
       </div>
 
-      {/* Hero Section */}
-      <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-        <div className="lg:col-span-7 space-y-4">
-          <div className="flex flex-wrap items-center gap-2">
+      {/* Minimalist Hero + Search */}
+      <section className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between pt-1">
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-2.5 text-xs">
             <span
-              className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium"
+              className="inline-flex items-center gap-2 font-mono-num px-2 py-0.5 rounded-[5px] border"
               style={{
                 borderColor: "var(--line-mint)",
                 background: "var(--brand-mint-tint)",
                 color: "var(--mint-bright)",
               }}
             >
-              <Zap className="h-3 w-3" />
-              RISE Mainnet · ~1ms Onchain Orderbook
+              <LiveDot />
+              LIVE · 30s pulse
             </span>
             <a
               href="https://x.com/anonfrxbt"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs transition-colors hover:border-[var(--line-mint)]"
-              style={{
-                borderColor: "var(--line)",
-                background: "var(--surface-1)",
-                color: "var(--text-mute)",
-              }}
+              className="inline-flex items-center gap-1 hover:underline"
+              style={{ color: "var(--text-dim)" }}
             >
-              made by <strong style={{ color: "var(--mint-bright)" }}>anonfrxbt</strong>
+              made by <span style={{ color: "var(--accent)" }}>anonfrxbt</span>
               <ArrowUpRight className="h-3 w-3" />
             </a>
           </div>
 
-          <h1 className="font-display text-4xl sm:text-5xl font-normal tracking-tight leading-[1.08]">
-            House of all{" "}
-            <span style={{ color: "var(--mint-bright)" }}>RISEx</span>
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
+            RISEx Market Intelligence
           </h1>
-
-          <p className="max-w-2xl text-sm sm:text-base leading-relaxed" style={{ color: "var(--text-mute)" }}>
-            Real-time analytics, wallet explorer, live orderbook depth, funding matrices,
-            registered builders, and protocol intelligence for RISEx — the fully onchain
-            unified exchange on RISE Chain.
+          <p className="text-xs sm:text-sm max-w-xl" style={{ color: "var(--text-mute)" }}>
+            Onchain perpetual markets, open interest leaders, funding carry, and wallet analytics on RISE Chain.
           </p>
+        </div>
 
-          {/* Hero Search Bar */}
-          <form
-            onSubmit={handleHeroSearch}
-            className="flex items-center gap-2 rounded-xl border p-1.5 max-w-xl transition-colors focus-within:border-[var(--line-mint)]"
-            style={{ background: "var(--card-bg-opaque)", borderColor: "var(--line)" }}
+        <form
+          onSubmit={handleHeroSearch}
+          className="flex items-center gap-2 rounded-[7px] border px-2.5 py-1.5 w-full lg:w-[420px] transition-colors focus-within:border-[var(--line-mint)]"
+          style={{ background: "var(--surface-0)", borderColor: "var(--line)" }}
+        >
+          <Search className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--text-dim)" }} />
+          <input
+            value={heroSearch}
+            onChange={(e) => setHeroSearch(e.target.value)}
+            placeholder="Search 0x wallet, trader, or ticker…"
+            className="w-full bg-transparent text-base sm:text-xs outline-none placeholder:text-[var(--text-dim)]"
+          />
+          <button
+            type="submit"
+            className="shrink-0 rounded-[5px] px-3 py-1 text-xs font-semibold cursor-pointer"
+            style={{
+              background: "var(--brand-mint-button)",
+              color: "var(--brand-mint-button-fg)",
+            }}
           >
-            <Search className="ml-2.5 h-4 w-4 shrink-0" style={{ color: "var(--mint)" }} />
-            <input
-              value={heroSearch}
-              onChange={(e) => setHeroSearch(e.target.value)}
-              placeholder="Search 0x wallet, trader, or market…"
-              className="w-full bg-transparent px-1.5 py-2 text-base sm:text-sm outline-none placeholder:text-[var(--text-dim)]"
-            />
-            <button
-              type="submit"
-              className="shrink-0 rounded-lg px-3.5 sm:px-4 py-2 text-xs font-semibold cursor-pointer transition-opacity hover:opacity-90"
-              style={{
-                background: "var(--brand-mint-button)",
-                color: "var(--brand-mint-button-fg)",
-              }}
-            >
-              Explore
-            </button>
-          </form>
-        </div>
-
-        {/* Points Season 1 + XLP Vault Quick Card */}
-        <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
-          <div className="eco-card p-4 space-y-2.5">
-            <div className="flex items-center justify-between">
-              <Link
-                href="/points"
-                className="inline-flex items-center gap-1.5 text-xs font-semibold hover:underline"
-                style={{ color: "var(--mint-bright)" }}
-              >
-                <Sparkles className="h-3.5 w-3.5" />
-                Season 1: Ignite Points →
-              </Link>
-              <span
-                className="font-mono-num text-[11px] px-2 py-0.5 rounded border"
-                style={{
-                  borderColor: "var(--line-mint)",
-                  background: "var(--brand-mint-tint)",
-                  color: "var(--mint)",
-                }}
-              >
-                {data.pointsEpoch?.epochId || "Live Epoch"}
-              </span>
-            </div>
-            <div className="flex items-baseline justify-between gap-2">
-              <div>
-                <div className="font-mono-num text-xl font-semibold">200,000 pts / wk</div>
-                <div className="text-xs mt-0.5" style={{ color: "var(--text-mute)" }}>
-                  {data.pointsEpoch?.description || "Weekly trader, LP & builder allocation"}
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-[11px]" style={{ color: "var(--text-dim)" }}>
-                  Next drop
-                </div>
-                <div className="font-mono-num text-sm font-semibold" style={{ color: "var(--mint)" }}>
-                  {fmtDuration(countdown)}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="eco-card p-4 flex items-center justify-between gap-4">
-            <div className="space-y-1">
-              <div className="text-xs font-semibold" style={{ color: "var(--text-soft)" }}>
-                XLP Vault (ERC-4626) · Yearn V3
-              </div>
-              <div className="text-xs" style={{ color: "var(--text-mute)" }}>
-                70% Crypto MM · 25% RWA MM · 5% Liquidation Insurance
-              </div>
-            </div>
-            <Link
-              href="/projects"
-              className="shrink-0 inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-medium hover:border-[var(--line-mint)]"
-              style={{ borderColor: "var(--line)", background: "var(--surface-1)" }}
-            >
-              Details <ArrowRight className="h-3 w-3" />
-            </Link>
-          </div>
-        </div>
+            Go
+          </button>
+        </form>
       </section>
 
-      {/* Protocol KPI Grid */}
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-        <div className="eco-card p-4">
-          <div className="text-xs" style={{ color: "var(--text-mute)" }}>
-            24h Exchange Volume
+      {/* Clean 4-Card KPI Strip */}
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+        <div className="eco-card p-3.5 sm:p-4">
+          <div className="text-[11px] uppercase tracking-wider" style={{ color: "var(--text-dim)" }}>
+            24h Volume
           </div>
-          <div className="font-mono-num text-2xl sm:text-3xl font-semibold mt-1">
+          <div className="font-mono-num text-xl sm:text-2xl font-semibold mt-1">
             {fmtCompactUsd(data.summary.totalVolume24hUsd)}
           </div>
-          <div className="text-[11px] mt-1 font-mono-num" style={{ color: "var(--mint)" }}>
-            Across {data.summary.activeMarketCount} live markets
+          <div className="text-[11px] mt-1" style={{ color: "var(--text-mute)" }}>
+            {data.summary.activeMarketCount} active pairs
           </div>
         </div>
 
-        <div className="eco-card p-4">
-          <div className="text-xs" style={{ color: "var(--text-mute)" }}>
-            Total Open Interest
+        <div className="eco-card p-3.5 sm:p-4">
+          <div className="text-[11px] uppercase tracking-wider" style={{ color: "var(--text-dim)" }}>
+            Open Interest
           </div>
-          <div className="font-mono-num text-2xl sm:text-3xl font-semibold mt-1">
+          <div className="font-mono-num text-xl sm:text-2xl font-semibold mt-1">
             {fmtCompactUsd(data.summary.totalOpenInterestUsd)}
           </div>
-          <div className="text-[11px] mt-1 font-mono-num" style={{ color: "var(--text-dim)" }}>
-            Avg Funding: {data.summary.avgFundingAprPct.toFixed(1)}% APR
+          <div className="text-[11px] font-mono-num mt-1" style={{ color: "var(--up)" }}>
+            Avg funding {data.summary.avgFundingAprPct.toFixed(1)}% APR
           </div>
         </div>
 
-        <div className="eco-card p-4">
-          <div className="text-xs" style={{ color: "var(--text-mute)" }}>
-            Registered Builders
+        <Link href="/projects" className="eco-card p-3.5 sm:p-4 block">
+          <div className="text-[11px] uppercase tracking-wider" style={{ color: "var(--text-dim)" }}>
+            Builders
           </div>
-          <div className="font-mono-num text-2xl sm:text-3xl font-semibold mt-1">
+          <div className="font-mono-num text-xl sm:text-2xl font-semibold mt-1">
             {data.summary.totalBuilders}
           </div>
-          <div className="text-[11px] mt-1" style={{ color: "var(--text-dim)" }}>
-            {data.summary.activeBuilders} active builder codes
+          <div className="text-[11px] mt-1" style={{ color: "var(--text-mute)" }}>
+            {data.summary.liveCompetitions} live competitions →
           </div>
-        </div>
+        </Link>
 
-        <div className="eco-card p-4">
-          <div className="text-xs" style={{ color: "var(--text-mute)" }}>
-            Active Competitions
+        <Link href="/points" className="eco-card p-3.5 sm:p-4 block">
+          <div className="text-[11px] uppercase tracking-wider" style={{ color: "var(--text-dim)" }}>
+            Ignite · {data.pointsEpoch?.epochId || "Season 1"}
           </div>
-          <div className="font-mono-num text-2xl sm:text-3xl font-semibold mt-1">
-            {data.summary.liveCompetitions}
+          <div className="font-mono-num text-xl sm:text-2xl font-semibold mt-1" style={{ color: "var(--accent)" }}>
+            {fmtDuration(countdown)}
           </div>
-          <div className="text-[11px] mt-1" style={{ color: "var(--text-dim)" }}>
-            {data.competitions.length} total seasons &amp; cups
+          <div className="text-[11px] mt-1" style={{ color: "var(--text-mute)" }}>
+            200k pts/wk · Rank lookup →
           </div>
-        </div>
+        </Link>
       </section>
 
-      {/* Asset Class Mix Bar */}
-      <section className="eco-card p-4 sm:p-5 space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <h2 className="text-sm font-semibold">Unified Exchange Asset Mix (24h Volume)</h2>
-            <p className="text-xs" style={{ color: "var(--text-mute)" }}>
-              Crypto, Equities/ETFs, and Commodities settling atomically on one orderbook
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-4 text-xs">
-            {data.summary.sectorBreakdown.map((s) => (
-              <div key={s.sector} className="flex items-center gap-2">
-                <span
-                  className="h-2.5 w-2.5 rounded-sm"
-                  style={{
-                    background:
-                      s.sector === "Crypto"
-                        ? "var(--mint)"
-                        : s.sector === "Equities & ETFs"
-                          ? "var(--rise-purple)"
-                          : "var(--amber)",
-                  }}
-                />
-                <span>
-                  {s.sector} ({s.count})
-                </span>
-                <span className="font-mono-num font-semibold">
-                  {fmtCompactUsd(s.volume24hUsd)}
-                </span>
-              </div>
-            ))}
-          </div>
+      {/* OI Leader Grid (Top 10 Markets) */}
+      <section className="space-y-2.5">
+        <div className="flex items-center justify-between text-xs">
+          <span className="font-semibold uppercase tracking-wider text-[11px]" style={{ color: "var(--text-mute)" }}>
+            Open Interest Leaders
+          </span>
+          <Link href="/markets" className="inline-flex items-center gap-1 hover:underline" style={{ color: "var(--accent)" }}>
+            All markets <ArrowRight className="h-3 w-3" />
+          </Link>
         </div>
 
-        <div className="h-3 w-full overflow-hidden rounded-full flex" style={{ background: "var(--surface-2)" }}>
-          {data.summary.sectorBreakdown.map((s) => {
-            const pct = (s.volume24hUsd / totalSectorVol) * 100;
-            const col =
-              s.sector === "Crypto"
-                ? "var(--mint)"
-                : s.sector === "Equities & ETFs"
-                  ? "var(--rise-purple)"
-                  : "var(--amber)";
+        <div className="oi-leader-grid">
+          {topOiMarkets.map((m) => {
+            const pct = Math.max(6, (m.openInterestUsd / maxOi) * 100);
             return (
-              <div
-                key={s.sector}
-                style={{ width: `${pct}%`, background: col }}
-                title={`${s.sector}: ${pct.toFixed(1)}% (${fmtCompactUsd(s.volume24hUsd)})`}
-              />
+              <Link
+                key={m.id}
+                href={`/markets?id=${m.id}`}
+                className="eco-card p-2.5 sm:p-3 flex flex-col justify-between gap-2 hover:bg-[var(--bg-hover)]"
+              >
+                <div className="flex items-center justify-between gap-1.5">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <MarketBadge symbol={m.symbol} size={18} />
+                    <span className="text-xs font-semibold truncate">{m.symbol}</span>
+                  </div>
+                  <span
+                    className="font-mono-num text-[10px]"
+                    style={{ color: m.change24hPct >= 0 ? "var(--up)" : "var(--down)" }}
+                  >
+                    {fmtPct(m.change24hPct)}
+                  </span>
+                </div>
+
+                <div>
+                  <div className="font-mono-num text-sm font-semibold">
+                    {fmtCompactUsd(m.openInterestUsd)}
+                  </div>
+                  <div className="mt-1.5 h-[2.5px] w-full rounded-full overflow-hidden" style={{ background: "var(--surface-2)" }}>
+                    <div
+                      className="h-full rounded-full"
+                      style={{ width: `${pct}%`, background: "var(--accent)" }}
+                    />
+                  </div>
+                </div>
+              </Link>
             );
           })}
         </div>
       </section>
 
-      {/* Live Market Depth & Chart Workbench */}
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="font-display text-2xl font-normal">Live Market Terminal</h2>
-            <p className="text-xs" style={{ color: "var(--text-mute)" }}>
-              Switch any of the {data.markets.length} active pairs for real-time orderbook depth, OHLC candles, fills &amp; funding
-            </p>
-          </div>
-          <Link
-            href="/markets"
-            className="inline-flex items-center gap-1 text-xs font-medium hover:underline"
-            style={{ color: "var(--mint-bright)" }}
-          >
-            Full Markets &amp; Funding Matrix <ArrowRight className="h-3.5 w-3.5" />
+      {/* Live Market Workbench */}
+      <section className="space-y-2.5">
+        <div className="flex items-center justify-between text-xs">
+          <span className="font-semibold uppercase tracking-wider text-[11px]" style={{ color: "var(--text-mute)" }}>
+            Live Orderbook &amp; Chart
+          </span>
+          <Link href="/markets" className="inline-flex items-center gap-1 hover:underline" style={{ color: "var(--accent)" }}>
+            Funding matrix <ArrowRight className="h-3 w-3" />
           </Link>
         </div>
         <MarketWorkbench markets={data.markets} initialMarketId="1" />
       </section>
 
-      {/* Markets Table */}
-      <section className="eco-card p-4 sm:p-5 space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-wrap items-center gap-1.5">
-            {(["All", "Crypto", "Equities & ETFs", "Commodities"] as const).map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setSector(tab)}
-                className="rounded-lg px-3 py-1.5 text-xs font-medium cursor-pointer transition-colors"
-                style={{
-                  background: sector === tab ? "var(--tab-bg-active)" : "var(--surface-1)",
-                  color: sector === tab ? "var(--mint-bright)" : "var(--text-mute)",
-                  border:
-                    sector === tab
-                      ? "1px solid var(--line-mint)"
-                      : "1px solid var(--line)",
-                }}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
+      {/* Clean Markets Screener + Top Wallets */}
+      <section className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        {/* Screener */}
+        <div className="lg:col-span-7 eco-card p-3.5 sm:p-4 space-y-3">
+          <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-wrap items-center gap-1">
+              {(["All", "Crypto", "Equities & ETFs", "Commodities"] as const).map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setSector(tab)}
+                  className="rounded-[6px] px-2.5 py-1 text-xs font-medium cursor-pointer transition-colors"
+                  style={{
+                    background: sector === tab ? "var(--tab-bg-active)" : "transparent",
+                    color: sector === tab ? "var(--mint-bright)" : "var(--text-mute)",
+                  }}
+                >
+                  {tab === "Equities & ETFs" ? "Equities" : tab}
+                </button>
+              ))}
+            </div>
 
-          <div
-            className="flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs"
-            style={{ borderColor: "var(--line)", background: "var(--surface-0)" }}
-          >
-            <Search className="h-3.5 w-3.5" style={{ color: "var(--text-dim)" }} />
-            <input
-              value={marketQuery}
-              onChange={(e) => setMarketQuery(e.target.value)}
-              placeholder="Filter ticker…"
-              className="bg-transparent outline-none w-36 placeholder:text-[var(--text-dim)]"
-            />
-          </div>
-        </div>
-
-        {/* Mobile Market Cards */}
-        <div className="sm:hidden space-y-2">
-          {filteredMarkets.slice(0, 12).map((m) => (
-            <Link
-              key={m.id}
-              href={`/markets?id=${m.id}`}
-              className="flex items-center justify-between rounded-xl border p-3 transition-colors active:bg-[var(--bg-hover)]"
+            <div
+              className="flex items-center gap-2 rounded-[6px] border px-2.5 py-1 text-xs"
               style={{ borderColor: "var(--line)", background: "var(--surface-0)" }}
             >
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="font-mono-num text-sm font-semibold">{m.symbol}/USDC</span>
-                  <span
-                    className="rounded px-1.5 py-0.5 text-[10px] font-medium"
-                    style={{
-                      background:
-                        m.sector === "Crypto"
-                          ? "var(--brand-mint-tint)"
-                          : m.sector === "Equities & ETFs"
-                            ? "var(--rise-purple-tint)"
-                            : "rgba(245, 182, 107, 0.14)",
-                      color:
-                        m.sector === "Crypto"
-                          ? "var(--mint-bright)"
-                          : m.sector === "Equities & ETFs"
-                            ? "var(--rise-purple)"
-                            : "var(--amber)",
-                    }}
-                  >
-                    {m.maxLeverage}x
-                  </span>
-                </div>
-                <div className="mt-1 flex items-center gap-2 text-[11px] font-mono-num" style={{ color: "var(--text-dim)" }}>
-                  <span>Vol {fmtCompactUsd(m.volume24hUsd)}</span>
-                  <span>·</span>
-                  <span>OI {fmtCompactUsd(m.openInterestUsd)}</span>
-                </div>
-              </div>
-              <div className="text-right shrink-0">
-                <div className="font-mono-num text-sm font-semibold">{fmtPrice(m.markPrice)}</div>
-                <div
-                  className="font-mono-num text-xs mt-0.5"
-                  style={{ color: m.change24hPct >= 0 ? "var(--up)" : "var(--down)" }}
-                >
-                  {fmtPct(m.change24hPct)}
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
+              <Search className="h-3 w-3" style={{ color: "var(--text-dim)" }} />
+              <input
+                value={marketQuery}
+                onChange={(e) => setMarketQuery(e.target.value)}
+                placeholder="Filter ticker…"
+                className="bg-transparent outline-none w-full sm:w-28 text-base sm:text-xs"
+              />
+            </div>
+          </div>
 
-        <div className="hidden sm:block overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b" style={{ borderColor: "var(--line)", color: "var(--text-dim)" }}>
-                <th className="py-2.5 pr-4 font-medium">Market</th>
-                <th className="py-2.5 px-3 font-medium">Sector</th>
-                <th className="py-2.5 px-3 font-medium text-right">Mark Price</th>
-                <th className="py-2.5 px-3 font-medium text-right">24h %</th>
-                <th className="py-2.5 px-3 font-medium text-right">24h Volume</th>
-                <th className="py-2.5 px-3 font-medium text-right">Open Interest</th>
-                <th className="py-2.5 px-3 font-medium text-right">Funding (APR)</th>
-                <th className="py-2.5 pl-3 font-medium text-right">Lev</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y" style={{ borderColor: "var(--line)" }}>
-              {filteredMarkets.slice(0, 18).map((m) => (
-                <tr
-                  key={m.id}
-                  onClick={() => router.push(`/markets?id=${m.id}`)}
-                  className="cursor-pointer transition-colors hover:bg-[var(--bg-hover)]"
-                >
-                  <td className="py-2.5 pr-4">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono-num font-semibold">{m.symbol}/USDC</span>
-                      <span className="hidden sm:inline" style={{ color: "var(--text-dim)" }}>
-                        {m.label}
-                      </span>
+          {/* Mobile cards */}
+          <div className="sm:hidden divide-y" style={{ borderColor: "var(--line-soft)" }}>
+            {filteredMarkets.slice(0, 10).map((m) => (
+              <Link
+                key={m.id}
+                href={`/markets?id=${m.id}`}
+                className="flex items-center justify-between py-2.5"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <MarketBadge symbol={m.symbol} size={22} />
+                  <div className="min-w-0">
+                    <div className="text-xs font-semibold">{m.symbol}</div>
+                    <div className="text-[11px] font-mono-num" style={{ color: "var(--text-dim)" }}>
+                      Vol {fmtCompactUsd(m.volume24hUsd)} · {m.maxLeverage}x
                     </div>
-                  </td>
-                  <td className="py-2.5 px-3">
-                    <span
-                      className="rounded-md px-2 py-0.5 text-[10px] font-medium"
-                      style={{
-                        background:
-                          m.sector === "Crypto"
-                            ? "var(--brand-mint-tint)"
-                            : m.sector === "Equities & ETFs"
-                              ? "var(--rise-purple-tint)"
-                              : "rgba(245, 182, 107, 0.14)",
-                        color:
-                          m.sector === "Crypto"
-                            ? "var(--mint-bright)"
-                            : m.sector === "Equities & ETFs"
-                              ? "var(--rise-purple)"
-                              : "var(--amber)",
-                      }}
-                    >
-                      {m.sector}
-                    </span>
-                  </td>
-                  <td className="py-2.5 px-3 text-right font-mono-num">{fmtPrice(m.markPrice)}</td>
-                  <td
-                    className="py-2.5 px-3 text-right font-mono-num"
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="font-mono-num text-xs font-semibold">{fmtPrice(m.markPrice)}</div>
+                  <div
+                    className="font-mono-num text-[11px]"
                     style={{ color: m.change24hPct >= 0 ? "var(--up)" : "var(--down)" }}
                   >
                     {fmtPct(m.change24hPct)}
-                  </td>
-                  <td className="py-2.5 px-3 text-right font-mono-num font-medium">
-                    {fmtCompactUsd(m.volume24hUsd)}
-                  </td>
-                  <td className="py-2.5 px-3 text-right font-mono-num">
-                    {fmtCompactUsd(m.openInterestUsd)}
-                  </td>
-                  <td
-                    className="py-2.5 px-3 text-right font-mono-num"
-                    style={{ color: m.fundingAprPct >= 0 ? "var(--up)" : "var(--down)" }}
-                  >
-                    {m.fundingAprPct >= 0 ? "+" : ""}
-                    {m.fundingAprPct.toFixed(1)}%
-                  </td>
-                  <td className="py-2.5 pl-3 text-right font-mono-num" style={{ color: "var(--text-mute)" }}>
-                    {m.maxLeverage}x
-                  </td>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          {/* Desktop table */}
+          <div className="hidden sm:block overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="border-b text-[10px] uppercase tracking-wider" style={{ borderColor: "var(--line)", color: "var(--text-dim)" }}>
+                  <th className="py-2 pr-3 font-medium">Market</th>
+                  <th className="py-2 px-2 font-medium text-right">Price</th>
+                  <th className="py-2 px-2 font-medium text-right">24h %</th>
+                  <th className="py-2 px-2 font-medium text-right">Volume</th>
+                  <th className="py-2 px-2 font-medium text-right">OI</th>
+                  <th className="py-2 pl-2 font-medium text-right">APR</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y" style={{ borderColor: "var(--line-soft)" }}>
+                {filteredMarkets.slice(0, 12).map((m) => (
+                  <tr
+                    key={m.id}
+                    onClick={() => router.push(`/markets?id=${m.id}`)}
+                    className="cursor-pointer transition-colors hover:bg-[var(--bg-hover)]"
+                  >
+                    <td className="py-2.5 pr-3">
+                      <div className="flex items-center gap-2">
+                        <MarketBadge symbol={m.symbol} size={20} />
+                        <span className="font-semibold">{m.symbol}</span>
+                        <span className="text-[11px]" style={{ color: "var(--text-dim)" }}>
+                          {m.maxLeverage}x
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-2.5 px-2 text-right font-mono-num">{fmtPrice(m.markPrice)}</td>
+                    <td
+                      className="py-2.5 px-2 text-right font-mono-num"
+                      style={{ color: m.change24hPct >= 0 ? "var(--up)" : "var(--down)" }}
+                    >
+                      {fmtPct(m.change24hPct)}
+                    </td>
+                    <td className="py-2.5 px-2 text-right font-mono-num font-medium">
+                      {fmtCompactUsd(m.volume24hUsd)}
+                    </td>
+                    <td className="py-2.5 px-2 text-right font-mono-num" style={{ color: "var(--text-mute)" }}>
+                      {fmtCompactUsd(m.openInterestUsd)}
+                    </td>
+                    <td
+                      className="py-2.5 pl-2 text-right font-mono-num"
+                      style={{ color: m.fundingAprPct >= 0 ? "var(--up)" : "var(--down)" }}
+                    >
+                      {m.fundingAprPct >= 0 ? "+" : ""}
+                      {m.fundingAprPct.toFixed(1)}%
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <div className="flex justify-between items-center pt-1 text-xs" style={{ color: "var(--text-mute)" }}>
-          <span>Showing top {Math.min(18, filteredMarkets.length)} of {filteredMarkets.length} markets</span>
-          <Link href="/markets" className="font-medium hover:underline" style={{ color: "var(--mint-bright)" }}>
-            View all {data.markets.length} markets →
-          </Link>
-        </div>
-      </section>
-
-      {/* Top Traders Leaderboard + Live Competitions */}
-      <section className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        <div className="lg:col-span-8 eco-card p-4 sm:p-5 space-y-4">
+        {/* Top Traders */}
+        <div className="lg:col-span-5 eco-card p-3.5 sm:p-4 space-y-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Award className="h-4 w-4" style={{ color: "var(--mint)" }} />
-              <h2 className="text-base font-semibold">Top RISEx Traders (All-Time PnL)</h2>
-            </div>
-            <Link
-              href="/explorer"
-              className="text-xs font-medium hover:underline"
-              style={{ color: "var(--mint-bright)" }}
-            >
-              Open Wallet Explorer →
+            <span className="text-xs font-semibold uppercase tracking-wider text-[11px]" style={{ color: "var(--text-mute)" }}>
+              Top Wallets (All-Time PnL)
+            </span>
+            <Link href="/explorer" className="text-xs hover:underline" style={{ color: "var(--accent)" }}>
+              Explorer →
             </Link>
           </div>
 
-          {/* Mobile Top Traders Cards */}
-          <div className="sm:hidden space-y-2">
-            {data.leaderboard.slice(0, 8).map((t) => (
+          <div className="divide-y" style={{ borderColor: "var(--line-soft)" }}>
+            {data.leaderboard.slice(0, 10).map((t) => (
               <Link
                 key={t.address}
                 href={`/explorer?address=${t.address}`}
-                className="flex items-center justify-between rounded-xl border p-3"
-                style={{ borderColor: "var(--line)", background: "var(--surface-0)" }}
+                className="flex items-center justify-between py-2.5 px-1 rounded-[5px] transition-colors hover:bg-[var(--bg-hover)]"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <span className="font-mono-num text-xs w-5" style={{ color: "var(--text-dim)" }}>
+                  <span className="font-mono-num text-[11px] w-5" style={{ color: "var(--text-dim)" }}>
                     #{t.rank}
                   </span>
                   {t.avatarUrl ? (
                     <Image
                       src={t.avatarUrl}
                       alt=""
-                      width={24}
-                      height={24}
-                      className="h-6 w-6 rounded-full object-cover border shrink-0"
-                      style={{ borderColor: "var(--line)" }}
+                      width={22}
+                      height={22}
+                      className="h-5 w-5 rounded-full object-cover shrink-0"
                     />
                   ) : (
                     <span
-                      className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-[10px] font-mono-num"
-                      style={{ background: "var(--surface-2)", color: "var(--mint)" }}
+                      className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-[10px] font-mono-num"
+                      style={{ background: "var(--surface-2)", color: "var(--accent)" }}
                     >
                       {t.address.slice(2, 4)}
                     </span>
                   )}
                   <div className="min-w-0">
-                    <div className="text-xs font-semibold truncate">
+                    <div className="text-xs font-medium truncate">
                       {t.xHandle ? `@${t.xHandle}` : t.username || shortAddr(t.address)}
                     </div>
                     <div className="text-[11px] font-mono-num" style={{ color: "var(--text-dim)" }}>
@@ -666,6 +502,7 @@ export function HomeClient({ initialData }: { initialData: OverviewPayload }) {
                     </div>
                   </div>
                 </div>
+
                 <div className="text-right shrink-0">
                   <div
                     className="font-mono-num text-xs font-semibold"
@@ -682,171 +519,6 @@ export function HomeClient({ initialData }: { initialData: OverviewPayload }) {
                 </div>
               </Link>
             ))}
-          </div>
-
-        <div className="hidden sm:block overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="border-b" style={{ borderColor: "var(--line)", color: "var(--text-dim)" }}>
-                  <th className="py-2 pr-3 font-medium">#</th>
-                  <th className="py-2 px-2 font-medium">Trader</th>
-                  <th className="py-2 px-2 font-medium text-right">PnL</th>
-                  <th className="py-2 px-2 font-medium text-right">ROI</th>
-                  <th className="py-2 px-2 font-medium text-right">Win Rate</th>
-                  <th className="py-2 px-2 font-medium text-right">Volume</th>
-                  <th className="py-2 pl-2 font-medium text-right">Inspect</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y" style={{ borderColor: "var(--line)" }}>
-                {data.leaderboard.slice(0, 10).map((t) => (
-                  <tr key={t.address} className="hover:bg-[var(--bg-hover)]">
-                    <td className="py-2.5 pr-3 font-mono-num" style={{ color: "var(--text-dim)" }}>
-                      {t.rank}
-                    </td>
-                    <td className="py-2.5 px-2">
-                      <Link
-                        href={`/explorer?address=${t.address}`}
-                        className="flex items-center gap-2 hover:underline"
-                      >
-                        {t.avatarUrl ? (
-                          <Image
-                            src={t.avatarUrl}
-                            alt=""
-                            width={20}
-                            height={20}
-                            className="h-5 w-5 rounded-full object-cover border"
-                            style={{ borderColor: "var(--line)" }}
-                          />
-                        ) : (
-                          <span
-                            className="grid h-5 w-5 place-items-center rounded-full text-[10px] font-mono-num"
-                            style={{ background: "var(--surface-2)", color: "var(--mint)" }}
-                          >
-                            {t.address.slice(2, 4)}
-                          </span>
-                        )}
-                        <span className="font-medium">
-                          {t.xHandle ? `@${t.xHandle}` : t.username || shortAddr(t.address)}
-                        </span>
-                      </Link>
-                    </td>
-                    <td
-                      className="py-2.5 px-2 text-right font-mono-num font-semibold"
-                      style={{ color: t.notionalPnlUsd >= 0 ? "var(--up)" : "var(--down)" }}
-                    >
-                      {fmtCompactUsd(t.notionalPnlUsd, true)}
-                    </td>
-                    <td
-                      className="py-2.5 px-2 text-right font-mono-num"
-                      style={{ color: t.roiPct >= 0 ? "var(--up)" : "var(--down)" }}
-                    >
-                      {fmtPct(t.roiPct)}
-                    </td>
-                    <td className="py-2.5 px-2 text-right font-mono-num">
-                      {t.winRatePct.toFixed(1)}%
-                    </td>
-                    <td className="py-2.5 px-2 text-right font-mono-num">
-                      {fmtCompactUsd(t.combinedVolumeUsd)}
-                    </td>
-                    <td className="py-2.5 pl-2 text-right">
-                      <Link
-                        href={`/explorer?address=${t.address}`}
-                        className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] border hover:border-[var(--line-mint)]"
-                        style={{ borderColor: "var(--line)", background: "var(--surface-1)" }}
-                      >
-                        <Wallet className="h-3 w-3" style={{ color: "var(--mint)" }} />
-                        View
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Competitions & Ecosystem Highlights */}
-        <div className="lg:col-span-4 space-y-4">
-          <div className="eco-card p-4 sm:p-5 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Trophy className="h-4 w-4" style={{ color: "var(--amber)" }} />
-                <h2 className="text-base font-semibold">Live Competitions</h2>
-              </div>
-              <Link href="/projects" className="text-xs" style={{ color: "var(--mint-bright)" }}>
-                All →
-              </Link>
-            </div>
-
-            <div className="space-y-2.5">
-              {liveCompetitions.slice(0, 5).map((c) => (
-                <div
-                  key={c.id}
-                  className="rounded-xl border p-3 flex items-center justify-between gap-3"
-                  style={{ borderColor: "var(--line)", background: "var(--surface-0)" }}
-                >
-                  <div>
-                    <div className="text-xs font-semibold">{c.name}</div>
-                    <div className="text-[11px] font-mono-num mt-0.5" style={{ color: "var(--text-dim)" }}>
-                      {c.participant_count.toLocaleString()} traders
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    {Number(c.prize_pool) > 0 ? (
-                      <span
-                        className="font-mono-num text-xs font-semibold px-2 py-0.5 rounded"
-                        style={{
-                          background: "rgba(245, 182, 107, 0.14)",
-                          color: "var(--amber)",
-                        }}
-                      >
-                        {fmtUsd(Number(c.prize_pool), false, 0)}
-                      </span>
-                    ) : (
-                      <span
-                        className="text-[10px] font-mono-num uppercase px-2 py-0.5 rounded"
-                        style={{
-                          background: "var(--brand-mint-tint)",
-                          color: "var(--mint)",
-                        }}
-                      >
-                        Live
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="eco-card p-4 sm:p-5 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Layers className="h-4 w-4" style={{ color: "var(--mint)" }} />
-                <h2 className="text-base font-semibold">Featured Builders</h2>
-              </div>
-              <Link href="/projects" className="text-xs" style={{ color: "var(--mint-bright)" }}>
-                {data.builders.length} total →
-              </Link>
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {data.builders
-                .filter((b) => b.is_active)
-                .slice(0, 14)
-                .map((b) => (
-                  <Link
-                    key={b.builder_id}
-                    href={`/projects?builder=${encodeURIComponent(b.slug)}`}
-                    className="rounded-lg border px-2.5 py-1 text-xs transition-colors hover:border-[var(--line-mint)]"
-                    style={{ borderColor: "var(--line)", background: "var(--surface-1)" }}
-                  >
-                    <span className="font-medium">{b.name}</span>{" "}
-                    <span className="font-mono-num text-[10px]" style={{ color: "var(--text-dim)" }}>
-                      #{b.builder_id}
-                    </span>
-                  </Link>
-                ))}
-            </div>
           </div>
         </div>
       </section>

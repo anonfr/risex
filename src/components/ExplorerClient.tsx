@@ -227,14 +227,14 @@ export function ExplorerClient({
   const d = walletData;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 reveal">
       {/* Header + Search */}
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <div className="text-xs font-mono-num uppercase tracking-wider" style={{ color: "var(--mint)" }}>
+          <div className="text-[11px] font-mono-num uppercase tracking-wider" style={{ color: "var(--mint)" }}>
             RISEx Wallet &amp; Tx Explorer
           </div>
-          <h1 className="font-display text-3xl sm:text-4xl font-normal mt-1">
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight mt-1">
             Inspect any RISEx account
           </h1>
         </div>

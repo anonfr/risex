@@ -58,12 +58,12 @@ export function ProjectsClient({
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-7 reveal">
       <div>
-        <div className="text-xs font-mono-num uppercase tracking-wider" style={{ color: "var(--mint)" }}>
+        <div className="text-[11px] font-mono-num uppercase tracking-wider" style={{ color: "var(--mint)" }}>
           Ecosystem, Builders &amp; Infrastructure
         </div>
-        <h1 className="font-display text-3xl sm:text-4xl font-normal mt-1">
+        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight mt-1">
           RISEx Ecosystem Directory
         </h1>
         <p className="text-sm mt-1 max-w-2xl" style={{ color: "var(--text-mute)" }}>

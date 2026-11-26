@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { AreaLineChart, BarSeriesChart, CandlestickChart, CandlePoint } from "./Charts";
+import { MarketBadge } from "./MarketBadge";
 import { fmtCompactUsd, fmtPct, fmtPrice, fmtQty, fmtTimestamp } from "@/lib/format";
 import { NormalizedMarket } from "@/lib/risex";
 
@@ -92,24 +93,27 @@ export function MarketWorkbench({
   return (
     <div className="eco-card p-4 sm:p-5 space-y-5">
       {/* Top Bar: Market Selector + Market Stats */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-wrap items-center gap-3">
-          <select
-            value={selectedId}
-            onChange={(e) => handleMarketChange(e.target.value)}
-            className="w-full sm:w-auto rounded-xl border px-3 py-2 text-sm font-mono-num font-semibold outline-none cursor-pointer"
-            style={{
-              background: "var(--tab-bg)",
-              borderColor: "var(--line-mint)",
-              color: "var(--text)",
-            }}
-          >
-            {markets.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.symbol}/USDC · {m.label} ({m.sector})
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            {activeMarket && <MarketBadge symbol={activeMarket.symbol} size={24} />}
+            <select
+              value={selectedId}
+              onChange={(e) => handleMarketChange(e.target.value)}
+              className="w-full sm:w-auto rounded-[7px] border px-3 py-1.5 text-sm font-mono-num font-semibold outline-none cursor-pointer"
+              style={{
+                background: "var(--tab-bg)",
+                borderColor: "var(--line)",
+                color: "var(--text)",
+              }}
+            >
+              {markets.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.symbol}/USDC · {m.label} ({m.sector})
+                </option>
+              ))}
+            </select>
+          </div>
 
           {activeMarket && (
             <div className="flex items-baseline gap-2.5">
@@ -274,7 +278,7 @@ export function MarketWorkbench({
                         className="absolute inset-y-0 right-0"
                         style={{
                           width: `${Math.min(100, (b.quantity / maxBookQty) * 100)}%`,
-                          background: "rgba(5, 223, 114, 0.14)",
+                          background: "rgba(53, 201, 141, 0.14)",
                         }}
                       />
                       <span className="relative z-10" style={{ color: "var(--text-soft)" }}>
@@ -301,7 +305,7 @@ export function MarketWorkbench({
                         className="absolute inset-y-0 left-0"
                         style={{
                           width: `${Math.min(100, (a.quantity / maxBookQty) * 100)}%`,
-                          background: "rgba(255, 101, 101, 0.14)",
+                          background: "rgba(228, 106, 123, 0.14)",
                         }}
                       />
                       <span className="relative z-10 font-medium" style={{ color: "var(--down)" }}>

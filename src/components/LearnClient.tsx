@@ -161,12 +161,12 @@ export function LearnClient() {
   }, [query, cat]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 reveal">
       <div className="space-y-2">
-        <div className="text-xs font-mono-num uppercase tracking-wider" style={{ color: "var(--mint)" }}>
+        <div className="text-[11px] font-mono-num uppercase tracking-wider" style={{ color: "var(--mint)" }}>
           Learn RISEx · Protocol Knowledge Base
         </div>
-        <h1 className="font-display text-3xl sm:text-4xl font-normal">
+        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
           Understand the unified exchange
         </h1>
         <p className="text-sm max-w-2xl" style={{ color: "var(--text-mute)" }}>

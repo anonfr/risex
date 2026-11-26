@@ -18,6 +18,7 @@ import {
   Wallet,
   X,
 } from "lucide-react";
+import { LiveDot, MarketBadge } from "./MarketBadge";
 
 interface QuickMarket {
   id: string;
@@ -27,11 +28,11 @@ interface QuickMarket {
 }
 
 const NAV_ITEMS = [
-  { href: "/", label: "Home", icon: Compass },
-  { href: "/explorer", label: "Explorer", icon: Wallet },
+  { href: "/", label: "Overview", icon: Compass },
   { href: "/markets", label: "Markets", icon: TrendingUp },
+  { href: "/explorer", label: "Explorer", icon: Wallet },
   { href: "/points", label: "Points", icon: Sparkles },
-  { href: "/projects", label: "Eco", icon: Layers },
+  { href: "/projects", label: "Ecosystem", icon: Layers },
   { href: "/learn", label: "Learn", icon: BookOpen },
 ];
 
@@ -143,24 +144,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <header
-        className="sticky top-0 z-40 border-b backdrop-blur-xl transition-colors"
+        className="sticky top-0 z-40 border-b backdrop-blur-md transition-colors"
         style={{
           background: "var(--nav-glass)",
           borderColor: "var(--line)",
         }}
       >
-        <div className="mx-auto flex h-14 max-w-[1360px] items-center justify-between gap-2 px-3 sm:px-6">
-          <div className="flex items-center gap-5 min-w-0">
-            <Link href="/" className="flex items-center gap-2.5 group shrink-0">
+        <div className="mx-auto flex h-12 max-w-[1320px] items-center justify-between gap-2 px-3 sm:px-5">
+          {/* Left brand */}
+          <div className="flex items-center gap-4 min-w-0">
+            <Link href="/" className="flex items-center gap-2 shrink-0 group">
               <span
-                className="grid h-8 w-8 place-items-center rounded-lg border transition-transform group-hover:scale-105"
+                className="grid h-7 w-7 place-items-center rounded-[6px] border transition-colors"
                 style={{
-                  background: "var(--brand-mint-tint)",
+                  background: "var(--accent-soft)",
                   borderColor: "var(--line-mint)",
-                  color: "var(--mint)",
+                  color: "var(--accent)",
                 }}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path
                     d="M4 17L10.5 6L14.5 13L20 5"
                     stroke="currentColor"
@@ -168,75 +170,58 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
-                  <path
-                    d="M4 20H20"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    opacity="0.55"
-                  />
                 </svg>
               </span>
-              <div className="flex items-center gap-2">
-                <span className="font-display text-base sm:text-lg font-semibold tracking-tight">
-                  risex.eco
-                </span>
-                <span
-                  className="hidden sm:inline-block text-[10px] font-mono-num px-1.5 py-0.5 rounded border"
-                  style={{
-                    color: "var(--mint)",
-                    borderColor: "var(--line-mint)",
-                    background: "var(--brand-mint-tint)",
-                  }}
-                >
-                  RISE · 4153
-                </span>
-              </div>
+              <span className="text-[13px] font-semibold tracking-wider uppercase">
+                risex<span style={{ color: "var(--accent)" }}>.eco</span>
+              </span>
             </Link>
 
-            <nav className="hidden md:flex items-center gap-1">
-              {NAV_ITEMS.map((item) => {
-                const active =
-                  item.href === "/"
-                    ? pathname === "/"
-                    : pathname.startsWith(item.href);
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-colors"
-                    style={{
-                      color: active ? "var(--mint-bright)" : "var(--text-mute)",
-                      background: active ? "var(--brand-mint-tint)" : "transparent",
-                      border: active
-                        ? "1px solid var(--line-mint)"
-                        : "1px solid transparent",
-                    }}
-                  >
-                    <Icon className="h-3.5 w-3.5" />
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </nav>
+            <span
+              className="hidden lg:inline-flex items-center gap-1.5 text-[11px] font-mono-num px-2 py-0.5 rounded-[5px] border"
+              style={{
+                borderColor: "var(--line)",
+                color: "var(--text-dim)",
+              }}
+            >
+              <LiveDot />
+              RISE 4153
+            </span>
           </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* Center nav */}
+          <nav className="hidden md:flex items-center gap-0.5">
+            {NAV_ITEMS.map((item) => {
+              const active =
+                item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  data-active={active}
+                  className="navtrigger"
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* Right actions */}
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
               type="button"
               onClick={() => setCmdOpen(true)}
               aria-label="Search wallet, market or tx"
-              className="inline-flex h-9 sm:h-8 items-center gap-2 rounded-lg border px-2.5 text-xs transition-colors hover:border-[var(--line-mint)] cursor-pointer"
+              className="inline-flex h-8 items-center gap-2 rounded-[6px] border px-2.5 text-xs transition-colors hover:border-[var(--line-mid)] cursor-pointer"
               style={{
-                background: "var(--surface-1)",
+                background: "transparent",
                 borderColor: "var(--line)",
                 color: "var(--text-mute)",
               }}
             >
               <Search className="h-3.5 w-3.5" />
-              <span className="hidden lg:inline">Search wallet, market, tx…</span>
-              <span className="hidden sm:inline lg:hidden">Search</span>
+              <span className="hidden lg:inline">Search</span>
               <span className="eco-kbd hidden sm:inline-flex items-center gap-0.5">
                 <Command className="h-2.5 w-2.5" />K
               </span>
@@ -246,23 +231,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               href="https://x.com/anonfrxbt"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden xl:inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors hover:border-[var(--line-mint)]"
+              className="hidden xl:inline-flex items-center gap-1 rounded-[6px] border px-2.5 h-8 text-xs transition-colors hover:border-[var(--line-mint)]"
               style={{
-                background: "var(--surface-0)",
                 borderColor: "var(--line)",
                 color: "var(--text-mute)",
               }}
             >
-              made by <span style={{ color: "var(--mint)" }}>anonfrxbt</span>
+              made by <span style={{ color: "var(--accent)" }}>anonfrxbt</span>
             </a>
 
             <button
               type="button"
               onClick={toggleTheme}
               aria-label="Toggle theme"
-              className="grid h-9 w-9 sm:h-8 sm:w-8 place-items-center rounded-lg border transition-colors hover:border-[var(--line-mint)] cursor-pointer"
+              className="grid h-8 w-8 place-items-center rounded-[6px] border transition-colors hover:border-[var(--line-mid)] cursor-pointer"
               style={{
-                background: "var(--surface-1)",
                 borderColor: "var(--line)",
                 color: "var(--text-mute)",
               }}
@@ -278,63 +261,49 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               href="https://rise.trade"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-9 sm:h-8 items-center gap-1 rounded-lg px-2.5 sm:px-3 text-xs font-semibold transition-opacity hover:opacity-90"
+              className="inline-flex h-8 items-center gap-1 rounded-[6px] px-2.5 sm:px-3 text-xs font-semibold transition-opacity hover:opacity-90"
               style={{
                 background: "var(--brand-mint-button)",
                 color: "var(--brand-mint-button-fg)",
-                boxShadow: "var(--shadow-cta)",
               }}
             >
-              <span className="hidden sm:inline">Trade on RISEx</span>
-              <span className="sm:hidden">Trade</span>
+              <span>Trade</span>
               <ArrowUpRight className="h-3.5 w-3.5" />
             </a>
           </div>
         </div>
       </header>
 
-      <main className="flex-1 mx-auto w-full max-w-[1360px] px-3.5 py-4 sm:px-6 sm:py-8">
+      <main className="flex-1 mx-auto w-full max-w-[1320px] px-3.5 py-5 sm:px-5 sm:py-7">
         {children}
       </main>
 
       <footer
-        className="border-t pt-7 pb-24 md:pb-8 mt-8 sm:mt-12"
+        className="border-t pt-6 pb-20 md:pb-7 mt-10"
         style={{ borderColor: "var(--line)", background: "var(--surface-0)" }}
       >
-        <div className="mx-auto max-w-[1360px] px-4 sm:px-6 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <span className="font-display text-base font-semibold">risex.eco</span>
-              <span className="text-xs" style={{ color: "var(--text-dim)" }}>
-                · House of all RISEx
+        <div className="mx-auto max-w-[1320px] px-4 sm:px-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2.5 flex-wrap text-xs">
+              <span className="font-semibold tracking-wider uppercase">
+                risex<span style={{ color: "var(--accent)" }}>.eco</span>
               </span>
-              <span
-                className="inline-flex items-center gap-1.5 text-[11px] font-mono-num px-2 py-0.5 rounded-full border"
-                style={{
-                  borderColor: "var(--line-mint)",
-                  background: "var(--brand-mint-tint)",
-                  color: "var(--mint-bright)",
-                }}
-              >
-                <span
-                  className="h-1.5 w-1.5 rounded-full live-dot"
-                  style={{ background: "var(--mint)" }}
-                />
-                Live via api.rise.trade
+              <span style={{ color: "var(--text-dim)" }}>·</span>
+              <span style={{ color: "var(--text-mute)" }}>
+                Made by{" "}
+                <a
+                  href="https://x.com/anonfrxbt"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium underline underline-offset-4 hover:opacity-80"
+                  style={{ color: "var(--accent)" }}
+                >
+                  anonfrxbt
+                </a>
               </span>
             </div>
-            <p className="text-xs" style={{ color: "var(--text-mute)" }}>
-              Made by{" "}
-              <a
-                href="https://x.com/anonfrxbt"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-semibold underline decoration-[var(--line-mint)] underline-offset-4 hover:opacity-80"
-                style={{ color: "var(--mint)" }}
-              >
-                anonfrxbt
-              </a>{" "}
-              · Independent RISEx &amp; RISE Chain analytics. Not affiliated with RISE Labs.
+            <p className="text-[11px]" style={{ color: "var(--text-dim)" }}>
+              Data from RISEx public API (`api.rise.trade`) and RISE Chain docs. Unofficial, read-only.
             </p>
           </div>
 
@@ -343,7 +312,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               href="https://x.com/anonfrxbt"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 font-medium hover:text-[var(--mint)]"
+              className="inline-flex items-center gap-1 hover:text-[var(--accent)]"
             >
               x.com/anonfrxbt <ArrowUpRight className="h-3 w-3" />
             </a>
@@ -351,7 +320,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               href="https://rise.trade"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 hover:text-[var(--mint)]"
+              className="inline-flex items-center gap-1 hover:text-[var(--accent)]"
             >
               rise.trade <ArrowUpRight className="h-3 w-3" />
             </a>
@@ -359,25 +328,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               href="https://docs.risechain.com/docs/risex"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 hover:text-[var(--mint)]"
+              className="inline-flex items-center gap-1 hover:text-[var(--accent)]"
             >
-              RISEx Docs <ArrowUpRight className="h-3 w-3" />
-            </a>
-            <a
-              href="https://developer.rise.trade/reference/general-information"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 hover:text-[var(--mint)]"
-            >
-              API Reference <ArrowUpRight className="h-3 w-3" />
+              Docs <ArrowUpRight className="h-3 w-3" />
             </a>
             <a
               href="https://explorer.risechain.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 hover:text-[var(--mint)]"
+              className="inline-flex items-center gap-1 hover:text-[var(--accent)]"
             >
-              RISE Explorer <ArrowUpRight className="h-3 w-3" />
+              Explorer <ArrowUpRight className="h-3 w-3" />
             </a>
           </div>
         </div>
@@ -386,14 +347,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* Mobile Bottom Navigation Dock */}
       <nav
         aria-label="Mobile Navigation"
-        className="fixed bottom-0 inset-x-0 z-40 md:hidden border-t backdrop-blur-xl"
+        className="fixed bottom-0 inset-x-0 z-40 md:hidden border-t backdrop-blur-lg"
         style={{
           background: "var(--nav-glass)",
           borderColor: "var(--line)",
           paddingBottom: "env(safe-area-inset-bottom)",
         }}
       >
-        <div className="grid grid-cols-6 h-14">
+        <div className="grid grid-cols-6 h-13">
           {NAV_ITEMS.map((item) => {
             const active =
               item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
@@ -404,18 +365,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 href={item.href}
                 className="flex flex-col items-center justify-center gap-0.5 text-[10px] font-medium transition-colors"
                 style={{
-                  color: active ? "var(--mint)" : "var(--text-mute)",
+                  color: active ? "var(--accent)" : "var(--text-dim)",
                 }}
               >
-                <span
-                  className="grid h-7 w-11 place-items-center rounded-full transition-colors"
-                  style={{
-                    background: active ? "var(--brand-mint-tint)" : "transparent",
-                  }}
-                >
-                  <Icon className="h-4 w-4" />
-                </span>
-                <span>{item.label}</span>
+                <Icon className="h-4 w-4" />
+                <span>{item.label === "Ecosystem" ? "Eco" : item.label}</span>
               </Link>
             );
           })}
@@ -430,10 +384,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           onClick={() => setCmdOpen(false)}
         >
           <div
-            className="w-full max-w-xl rounded-2xl border overflow-hidden shadow-2xl"
+            className="w-full max-w-xl rounded-[9px] border overflow-hidden"
             style={{
               background: "var(--palette-bg)",
-              borderColor: "var(--line-mint)",
+              borderColor: "var(--line-mid)",
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -442,18 +396,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               className="flex items-center gap-2.5 border-b px-3.5 py-3"
               style={{ borderColor: "var(--line)" }}
             >
-              <Search className="h-4 w-4 shrink-0" style={{ color: "var(--mint)" }} />
+              <Search className="h-4 w-4 shrink-0" style={{ color: "var(--accent)" }} />
               <input
                 autoFocus
                 value={cmdQuery}
                 onChange={(e) => setCmdQuery(e.target.value)}
                 placeholder="Paste 0x wallet, tx hash, or market…"
-                className="w-full bg-transparent text-sm outline-none placeholder:text-[var(--text-dim)]"
+                className="w-full bg-transparent text-base sm:text-sm outline-none placeholder:text-[var(--text-dim)]"
               />
               <button
                 type="button"
                 onClick={() => setCmdOpen(false)}
-                className="rounded-md p-1.5 hover:bg-[var(--surface-2)] cursor-pointer"
+                className="rounded p-1 hover:bg-[var(--surface-2)] cursor-pointer"
                 style={{ color: "var(--text-dim)" }}
               >
                 <X className="h-4 w-4" />
@@ -469,19 +423,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     setCmdQuery("");
                     router.push(`/explorer?address=${trimmed}`);
                   }}
-                  className="w-full flex items-center justify-between rounded-xl border px-3.5 py-2.5 text-left text-sm cursor-pointer"
+                  className="w-full flex items-center justify-between rounded-[7px] border px-3 py-2.5 text-left text-xs cursor-pointer"
                   style={{
                     background: "var(--brand-mint-tint)",
                     borderColor: "var(--line-mint)",
                   }}
                 >
                   <span className="flex items-center gap-2 font-mono-num">
-                    <Wallet className="h-4 w-4" style={{ color: "var(--mint)" }} />
+                    <Wallet className="h-4 w-4" style={{ color: "var(--accent)" }} />
                     Inspect wallet {trimmed.slice(0, 10)}…{trimmed.slice(-6)}
                   </span>
-                  <span className="text-xs" style={{ color: "var(--mint)" }}>
-                    Enter ↵
-                  </span>
+                  <span style={{ color: "var(--accent)" }}>Enter ↵</span>
                 </button>
               )}
 
@@ -493,28 +445,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     setCmdQuery("");
                     router.push(`/explorer?tx=${trimmed}`);
                   }}
-                  className="w-full flex items-center justify-between rounded-xl border px-3.5 py-2.5 text-left text-sm cursor-pointer"
+                  className="w-full flex items-center justify-between rounded-[7px] border px-3 py-2.5 text-left text-xs cursor-pointer"
                   style={{
                     background: "var(--brand-mint-tint)",
                     borderColor: "var(--line-mint)",
                   }}
                 >
                   <span className="flex items-center gap-2 font-mono-num">
-                    <Activity className="h-4 w-4" style={{ color: "var(--mint)" }} />
+                    <Activity className="h-4 w-4" style={{ color: "var(--accent)" }} />
                     Decode tx {trimmed.slice(0, 12)}…{trimmed.slice(-6)}
                   </span>
-                  <span className="text-xs" style={{ color: "var(--mint)" }}>
-                    Enter ↵
-                  </span>
+                  <span style={{ color: "var(--accent)" }}>Enter ↵</span>
                 </button>
               )}
 
               <div>
                 <div
-                  className="px-2 pb-1.5 text-[11px] font-semibold uppercase tracking-wider"
+                  className="px-2 pb-1.5 text-[10px] font-semibold uppercase tracking-widest"
                   style={{ color: "var(--text-dim)" }}
                 >
-                  Pages
+                  Navigate
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
                   {NAV_ITEMS.map((item) => {
@@ -527,13 +477,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                           setCmdOpen(false);
                           router.push(item.href);
                         }}
-                        className="flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium transition-colors hover:border-[var(--line-mint)] cursor-pointer"
+                        className="flex items-center gap-2 rounded-[6px] border px-3 py-2 text-xs font-medium transition-colors hover:border-[var(--line-mid)] cursor-pointer"
                         style={{
                           background: "var(--surface-1)",
                           borderColor: "var(--line)",
                         }}
                       >
-                        <Icon className="h-3.5 w-3.5" style={{ color: "var(--mint)" }} />
+                        <Icon className="h-3.5 w-3.5" style={{ color: "var(--accent)" }} />
                         {item.label}
                       </button>
                     );
@@ -544,7 +494,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               {filteredMarkets.length > 0 && (
                 <div>
                   <div
-                    className="px-2 pb-1.5 text-[11px] font-semibold uppercase tracking-wider"
+                    className="px-2 pb-1.5 text-[10px] font-semibold uppercase tracking-widest"
                     style={{ color: "var(--text-dim)" }}
                   >
                     Markets
@@ -559,21 +509,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                           setCmdQuery("");
                           router.push(`/markets?id=${m.id}`);
                         }}
-                        className="w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs transition-colors hover:bg-[var(--brand-mint-tint)] cursor-pointer"
+                        className="w-full flex items-center justify-between rounded-[6px] px-2.5 py-2 text-xs transition-colors hover:bg-[var(--bg-hover)] cursor-pointer"
                       >
                         <div className="flex items-center gap-2.5">
-                          <span className="font-mono-num font-semibold">
-                            {m.symbol}/USDC
-                          </span>
+                          <MarketBadge symbol={m.symbol} size={20} />
+                          <span className="font-mono-num font-semibold">{m.symbol}</span>
                           <span style={{ color: "var(--text-mute)" }}>{m.label}</span>
                         </div>
-                        <span
-                          className="rounded px-1.5 py-0.5 text-[10px]"
-                          style={{
-                            background: "var(--surface-2)",
-                            color: "var(--text-mute)",
-                          }}
-                        >
+                        <span className="text-[11px]" style={{ color: "var(--text-dim)" }}>
                           {m.sector}
                         </span>
                       </button>
@@ -593,7 +536,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="underline"
-                    style={{ color: "var(--mint)" }}
+                    style={{ color: "var(--accent)" }}
                   >
                     anonfrxbt
                   </a>

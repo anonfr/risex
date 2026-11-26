@@ -1,16 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { Chivo_Mono, Space_Grotesk } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { AppShell } from "@/components/AppShell";
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
 });
 
-const chivoMono = Chivo_Mono({
-  variable: "--font-chivo-mono",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains",
   subsets: ["latin"],
   weight: ["400", "500", "600"],
 });
@@ -20,13 +20,13 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   viewportFit: "cover",
-  themeColor: "#000000",
+  themeColor: "#0b0f0e",
 };
 
 export const metadata: Metadata = {
-  title: "risex.eco · House of all RISEx",
+  title: "risex.eco · RISEx Market Intelligence",
   description:
-    "Real-time analytics, wallet explorer, orderbook depth, funding matrices, builders directory, and protocol knowledge base for RISEx on RISE Chain.",
+    "Real-time RISEx perpetual market intelligence, live orderbook depth, wallet explorer, funding rates, builders, and rankings on RISE Chain.",
   keywords: [
     "RISEx",
     "RISE Chain",
@@ -49,7 +49,7 @@ export default function RootLayout({
       lang="en"
       data-theme="dark"
       suppressHydrationWarning
-      className={`${spaceGrotesk.variable} ${chivoMono.variable}`}
+      className={`${inter.variable} ${jetbrainsMono.variable}`}
     >
       <body className="min-h-screen flex flex-col antialiased">
         <script

@@ -94,12 +94,12 @@ export function MarketsClient({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 reveal">
       <div>
-        <div className="text-xs font-mono-num uppercase tracking-wider" style={{ color: "var(--mint)" }}>
+        <div className="text-[11px] font-mono-num uppercase tracking-wider" style={{ color: "var(--mint)" }}>
           Markets, Depth &amp; Financials
         </div>
-        <h1 className="font-display text-3xl sm:text-4xl font-normal mt-1">
+        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight mt-1">
           RISEx Market Matrix
         </h1>
         <p className="text-sm mt-1" style={{ color: "var(--text-mute)" }}>
